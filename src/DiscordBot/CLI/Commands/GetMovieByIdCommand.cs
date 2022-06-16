@@ -39,10 +39,10 @@ namespace Vue.DiscordBot.CLI.Commands
             {
                 Title = movie.title,
                 ImageUrl = movie.image,
-                ThumbnailUrl = movie.image
+                ThumbnailUrl = movie.image,
+                Url = movie.vue_url
             };
-
-
+            
             embed.AddField("Cast", movie.cast);
             embed.AddField("Description", description);
             embed.AddField("Rating", $"{movie.rating_average}:star:", inline: true);
