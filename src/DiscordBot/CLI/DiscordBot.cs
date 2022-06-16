@@ -1,38 +1,48 @@
-﻿using Microsoft.Extensions.Hosting;
+﻿using Discord;
+using Discord.WebSocket;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using System.Text;
-using Vue.Core.Application.Dtos;
+using Microsoft.Extensions.Options;
 using Vue.Core.Application.Interfaces;
 
 namespace Vue.DiscordBot.CLI
 {
-    public sealed class DiscordBot : IHostedService
+    internal sealed class DiscordBot : IHostedService
     {
         private readonly ILogger<DiscordBot> _logger;
         private readonly IVueService _vueService;
-
+        private readonly DiscordSocketClient _discordSocketClient;
+        private readonly DiscordBotConfiguration _discordBotConfiguration;
         public DiscordBot(
             ILogger<DiscordBot> logger,
             IHostApplicationLifetime applicationLifetime,
-            IVueService vueService)
+            IVueService vueService,
+            IOptions<DiscordBotConfiguration> discordBotConfigurationOptions)
         {
             _logger = logger;
             _vueService = vueService;
+
+            _discordBotConfiguration = discordBotConfigurationOptions.Value;
+            _discordSocketClient = new DiscordSocketClient();
+            _discordSocketClient.Log += Log;
+
             applicationLifetime.ApplicationStarted.Register(OnStarted);
             applicationLifetime.ApplicationStopping.Register(OnStopping);
             applicationLifetime.ApplicationStopped.Register(OnStopped);
         }
 
-        public Task StartAsync(CancellationToken cancellationToken)
+        public async Task StartAsync(CancellationToken cancellationToken)
         {
             _logger.LogInformation("1. StartAsync has been called.");
-            return Task.CompletedTask;
+
+            await _discordSocketClient.LoginAsync(TokenType.Bot, _discordBotConfiguration.Token);
+            await _discordSocketClient.StartAsync();
         }
 
-        public Task StopAsync(CancellationToken cancellationToken)
+        public async Task StopAsync(CancellationToken cancellationToken)
         {
             _logger.LogInformation("4. StopAsync has been called.");
-            return Task.CompletedTask;
+            await _discordSocketClient.StopAsync();
         }
 
         private async void OnStarted()
@@ -57,6 +67,12 @@ namespace Vue.DiscordBot.CLI
         private void OnStopped()
         {
             _logger.LogInformation("5. OnStopped has been called.");
+        }
+
+        private Task Log(LogMessage logMessage)
+        {
+            _logger.LogInformation(logMessage.Message);
+            return Task.CompletedTask;
         }
     }
 }
