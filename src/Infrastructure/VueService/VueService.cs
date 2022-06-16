@@ -37,11 +37,16 @@ namespace Vue.Infrastructure.VueService
             string dateOffset = DateTime.Now.ToString("yyyy-MM-dd+HH:mm:00");
             return $"&dateOffset={dateOffset}";
         }
+
+        private static string Range(int range)
+        {
+            return $"&range={range}";
+        }
         #endregion string modifiers
 
         public async Task<IEnumerable<MovieDto>> GetAllMoviesAsync(CancellationToken cancellationToken)
         {
-            string path = $"{MoviesWithType("NOW_PLAYING")}&filters={DateOffset()}&range=1";
+            string path = $"{MoviesWithType("NOW_PLAYING")}&filters={DateOffset()}{Range(1)}";
             HttpResponseMessage httpResponseMessage = await _httpClient.GetAsync(path, cancellationToken);
             httpResponseMessage.EnsureSuccessStatusCode();
             return await httpResponseMessage.Content.ReadFromJsonAsync<IEnumerable<MovieDto>>(cancellationToken: cancellationToken) 
@@ -59,7 +64,7 @@ namespace Vue.Infrastructure.VueService
             HttpResponseMessage httpResponseMessage = await _httpClient.GetAsync(path, cancellationToken);
             httpResponseMessage.EnsureSuccessStatusCode();
             return await httpResponseMessage.Content.ReadFromJsonAsync<MovieDto>(cancellationToken: cancellationToken) 
-                   ?? new MovieDto();
+                ?? new MovieDto();
         }
 
         public Task<IEnumerable<MovieDto>> GetMoviesThatArePlayingNowAsync(int cinemaId, CancellationToken cancellationToken)
@@ -79,7 +84,7 @@ namespace Vue.Infrastructure.VueService
 
         public async Task<IEnumerable<PerformanceDto>> GetPerformancesAsync(int cinemaId, int movieId, int range, CancellationToken cancellationToken)
         {
-            string path = $"{PERFORMANCES}?movie_id={movieId}&cinema_ids[]={cinemaId}&filters=&dateOffset=&range={range}";
+            string path = $"{PERFORMANCES}?movie_id={movieId}&cinema_ids={cinemaId}&filters=&dateOffset={Range(range)}";
             HttpResponseMessage httpResponseMessage = await _httpClient.GetAsync(path, cancellationToken);
             httpResponseMessage.EnsureSuccessStatusCode();
             return await httpResponseMessage.Content.ReadFromJsonAsync<IEnumerable<PerformanceDto>>(cancellationToken: cancellationToken) 
@@ -93,7 +98,7 @@ namespace Vue.Infrastructure.VueService
 
         public async Task<IEnumerable<MovieDto>> GetTop10MoviesAsync(CancellationToken cancellationToken)
         {
-            string path = $"{MoviesWithType("TOP_10")}&filters={DateOffset()}&range=365";
+            string path = $"{MoviesWithType("TOP_10")}&filters={DateOffset()}{Range(365)}";
             HttpResponseMessage httpResponseMessage = await _httpClient.GetAsync(path, cancellationToken);
             httpResponseMessage.EnsureSuccessStatusCode();
             return await httpResponseMessage.Content.ReadFromJsonAsync<IEnumerable<MovieDto>>(cancellationToken: cancellationToken)

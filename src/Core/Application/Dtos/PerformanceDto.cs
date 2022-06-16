@@ -18,6 +18,8 @@ public class PerformanceDto
     public int has_nl { get; set; }
     public string start { get; set; }
     public string end { get; set; }
+    public DateTime StartDate => DateTime.Parse(start);
+    public DateTime EndDate => DateTime.Parse(end);
     public int has_break { get; set; }
     public int visible { get; set; }
     public int disabled { get; set; }

@@ -1,7 +1,6 @@
 using Discord;
 using Discord.WebSocket;
 using System.Text.RegularExpressions;
-using Discord.Rest;
 using Vue.Core.Application.Dtos;
 using Vue.Core.Application.Interfaces;
 
@@ -33,7 +32,6 @@ namespace Vue.DiscordBot.CLI.Commands
         {
             int id = Convert.ToInt32(socketSlashCommand.Data.Options.First().Value);
             MovieDto movie = await _vueService.GetMovieByIdAsync(id, CancellationToken.None);
-            IEnumerable<PerformanceDto> performanceDtos = await _vueService.GetPerformancesAsync(23, id, 7, CancellationToken.None);
             string description = Regex.Replace(movie.description, @"<.*?>", "");
 
             EmbedBuilder embed = new EmbedBuilder
@@ -49,17 +47,8 @@ namespace Vue.DiscordBot.CLI.Commands
             embed.AddField("Genres", movie.genres, inline: true);
             embed.AddField("Release Date", DateTime.Parse(movie.release_date).ToString("yyyy-MM-dd"), inline: true);
             embed.AddField("Length", $"{movie.playingtime}min", inline: true);
-            await socketSlashCommand.RespondAsync(embed: embed.Build());
 
-            List<Embed> embedBuilders = new List<Embed>();
-            foreach (PerformanceDto performanceDto in performanceDtos)
-            {
-                EmbedBuilder embedBuilder = new EmbedBuilder();
-                embedBuilder.AddField("Start", DateTime.Parse(performanceDto.start).ToString("yyyy-MM-dd HH:mm"));
-                embedBuilder.AddField("End", DateTime.Parse(performanceDto.end).ToString("yyyy-MM-dd HH:mm"));
-                embedBuilders.Add(embedBuilder.Build());
-            }
-            await socketSlashCommand.FollowupAsync(embeds: embedBuilders.ToArray());
+            await socketSlashCommand.RespondAsync(embed: embed.Build());
         }
 
         public SlashCommandProperties Build()
