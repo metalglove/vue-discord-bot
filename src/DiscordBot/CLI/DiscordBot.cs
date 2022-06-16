@@ -15,6 +15,7 @@ namespace Vue.DiscordBot.CLI
         private readonly IVueService _vueService;
         private readonly DiscordSocketClient _discordSocketClient;
         private readonly DiscordBotConfiguration _discordBotConfiguration;
+
         public DiscordBot(
             ILogger<DiscordBot> logger,
             IHostApplicationLifetime applicationLifetime,
