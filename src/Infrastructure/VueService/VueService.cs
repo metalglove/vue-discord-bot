@@ -77,9 +77,13 @@ namespace Vue.Infrastructure.VueService
             throw new NotImplementedException();
         }
 
-        public Task<IEnumerable<MovieDto>> GetPerformancesAsync(int cinemaId, int movieId, CancellationToken cancellationToken)
+        public async Task<IEnumerable<PerformanceDto>> GetPerformancesAsync(int cinemaId, int movieId, int range, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            string path = $"{PERFORMANCES}?movie_id={movieId}&cinema_ids[]={cinemaId}&filters=&dateOffset=&range={range}";
+            HttpResponseMessage httpResponseMessage = await _httpClient.GetAsync(path, cancellationToken);
+            httpResponseMessage.EnsureSuccessStatusCode();
+            return await httpResponseMessage.Content.ReadFromJsonAsync<IEnumerable<PerformanceDto>>(cancellationToken: cancellationToken) 
+                   ?? new List<PerformanceDto>();
         }
 
         public Task<IEnumerable<MovieDto>> GetPremieringMoviesAsync(CancellationToken cancellationToken)
