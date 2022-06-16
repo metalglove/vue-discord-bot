@@ -36,8 +36,8 @@ namespace Vue.Core.Application.Interfaces
         /// <param name="cinemaId">The cinema identifier.</param>
         /// <param name="movieId">The movie identifier.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>Returns an awaitable <see cref="Task"/> containing a collection of <see cref="MovieDto"/>s.</returns>
-        public Task<IEnumerable<MovieDto>> GetPerformancesAsync(int cinemaId, int movieId, CancellationToken cancellationToken);
+        /// <returns>Returns an awaitable <see cref="Task"/> containing a collection of <see cref="PerformanceDto"/>s.</returns>
+        public Task<IEnumerable<PerformanceDto>> GetPerformancesAsync(int cinemaId, int movieId, int range, CancellationToken cancellationToken);
 
         /// <summary>
         /// Gets the premiering movies asynchronously.
