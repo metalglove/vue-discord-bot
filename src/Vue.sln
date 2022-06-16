@@ -20,9 +20,19 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CLI", "DiscordBot\CLI\CLI.c
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Vue.Infrastructure", "Vue.Infrastructure", "{7ED6BCA1-78BD-41C5-B2F3-9F8083F72B0E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VueService", "Infrastructure\VueService\VueService.csproj", "{E41CC6B5-8B62-430D-98C2-DA069509788A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "VueService", "Infrastructure\VueService\VueService.csproj", "{E41CC6B5-8B62-430D-98C2-DA069509788A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Persistence", "Infrastructure\Persistence\Persistence.csproj", "{BEC583C8-6556-43BD-9BAB-38D74D404775}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Persistence", "Infrastructure\Persistence\Persistence.csproj", "{BEC583C8-6556-43BD-9BAB-38D74D404775}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docs", "docs", "{940200D6-F9B9-43CA-8D57-59DF8AAD6F17}"
+	ProjectSection(SolutionItems) = preProject
+		..\docs\IDEAS.md = ..\docs\IDEAS.md
+		..\docs\reserve-seat-request-flow.md = ..\docs\reserve-seat-request-flow.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Vue.Mapping", "Vue.Mapping", "{8A1C1BE2-72B2-4135-8E35-B3AE7B02ADFC}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mapping", "Mapping\Mapping\Mapping.csproj", "{40A4DDA5-BF4E-4E4B-92DC-325E374F16E6}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -50,6 +60,10 @@ Global
 		{BEC583C8-6556-43BD-9BAB-38D74D404775}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{BEC583C8-6556-43BD-9BAB-38D74D404775}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{BEC583C8-6556-43BD-9BAB-38D74D404775}.Release|Any CPU.Build.0 = Release|Any CPU
+		{40A4DDA5-BF4E-4E4B-92DC-325E374F16E6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{40A4DDA5-BF4E-4E4B-92DC-325E374F16E6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{40A4DDA5-BF4E-4E4B-92DC-325E374F16E6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{40A4DDA5-BF4E-4E4B-92DC-325E374F16E6}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -60,6 +74,7 @@ Global
 		{2413BCCB-15FB-434E-A63B-D9634534D0A8} = {A0F29315-6B27-4C8D-B944-0DFC4378C4DC}
 		{E41CC6B5-8B62-430D-98C2-DA069509788A} = {7ED6BCA1-78BD-41C5-B2F3-9F8083F72B0E}
 		{BEC583C8-6556-43BD-9BAB-38D74D404775} = {7ED6BCA1-78BD-41C5-B2F3-9F8083F72B0E}
+		{40A4DDA5-BF4E-4E4B-92DC-325E374F16E6} = {8A1C1BE2-72B2-4135-8E35-B3AE7B02ADFC}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {CAAE07F2-89A7-4EAB-A6BD-E248F77FA072}
