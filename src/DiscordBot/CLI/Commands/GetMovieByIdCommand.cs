@@ -38,10 +38,17 @@ namespace Vue.DiscordBot.CLI.Commands
             EmbedBuilder embed = new EmbedBuilder
             {
                 Title = movie.title,
-                Description = description,
                 ImageUrl = movie.image,
+                ThumbnailUrl = movie.image
             };
-            embed.AddField("Rating", $"{movie.rating_average}:star:");
+
+
+            embed.AddField("Cast", movie.cast);
+            embed.AddField("Description", description);
+            embed.AddField("Rating", $"{movie.rating_average}:star:", inline: true);
+            embed.AddField("Genres", movie.genres, inline: true);
+            embed.AddField("Release Date", DateTime.Parse(movie.release_date).ToString("yyyy-MM-dd"), inline: true);
+            embed.AddField("Length", $"{movie.playingtime}min", inline: true);
             await socketSlashCommand.RespondAsync(embed: embed.Build());
         }
 
