@@ -53,9 +53,13 @@ namespace Vue.Infrastructure.VueService
             throw new NotImplementedException();
         }
 
-        public Task<MovieDto> GetMovieByIdAsync(int id, CancellationToken cancellationToken)
+        public async Task<MovieDto> GetMovieByIdAsync(int id, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            string path = $"{MOVIES}?movie_id={id}";
+            HttpResponseMessage httpResponseMessage = await _httpClient.GetAsync(path, cancellationToken);
+            httpResponseMessage.EnsureSuccessStatusCode();
+            return await httpResponseMessage.Content.ReadFromJsonAsync<MovieDto>(cancellationToken: cancellationToken) 
+                   ?? new MovieDto();
         }
 
         public Task<IEnumerable<MovieDto>> GetMoviesThatArePlayingNowAsync(int cinemaId, CancellationToken cancellationToken)
