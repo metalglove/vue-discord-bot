@@ -10,11 +10,25 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Discord.Net" Version="3.7.2" />
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="6.0.1" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\Mapping\Mapping\Mapping.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Modules\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="appsettings.EXAMPLE.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="appsettings.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
 </Project>
