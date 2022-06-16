@@ -1,5 +1,6 @@
 using Discord;
 using Discord.WebSocket;
+using System.Text.RegularExpressions;
 using Vue.Core.Application.Dtos;
 using Vue.Core.Application.Interfaces;
 
@@ -29,12 +30,15 @@ namespace Vue.DiscordBot.CLI.Commands
 
         public async Task HandleAsync(SocketSlashCommand socketSlashCommand)
         {
-            int id = (int) socketSlashCommand.Data.Options.First().Value;
+            int id = Convert.ToInt32(socketSlashCommand.Data.Options.First().Value);
             MovieDto movie = await _vueService.GetMovieByIdAsync(id, CancellationToken.None);
+
+            string description = Regex.Replace(movie.description, @"<.*?>", "");
+
             EmbedBuilder embed = new EmbedBuilder
             {
                 Title = movie.title,
-                Description = movie.description,
+                Description = description,
                 ImageUrl = movie.image,
             };
             embed.AddField("Rating", $"{movie.rating_average}:star:");
