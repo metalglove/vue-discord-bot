@@ -19,10 +19,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Modules\" />
-  </ItemGroup>
-
-  <ItemGroup>
     <None Update="appsettings.EXAMPLE.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
