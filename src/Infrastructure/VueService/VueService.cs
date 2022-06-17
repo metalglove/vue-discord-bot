@@ -9,11 +9,6 @@ namespace Vue.Infrastructure.VueService
     /// </summary>
     public sealed class VueService : IVueService
     {
-        private const string MOVIES = "movies.json";
-        private const string PERFORMANCES = "performances.json";
-        private const string USER_LOGIN = "user/login.json";
-        private const string CART = "api/cart.php";
-
         private readonly HttpClient _httpClient;
 
         /// <summary>
@@ -26,27 +21,14 @@ namespace Vue.Infrastructure.VueService
             _httpClient = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
         }
 
-        #region string modifiers
-        private static string MoviesWithType(string type)
-        {
-            return $"{MOVIES}?type={type}";
-        }
-
-        private static string DateOffset()
-        {
-            string dateOffset = DateTime.Now.ToString("yyyy-MM-dd+HH:mm:00");
-            return $"&dateOffset={dateOffset}";
-        }
-
-        private static string Range(int range)
-        {
-            return $"&range={range}";
-        }
-        #endregion string modifiers
-
         public async Task<IEnumerable<MovieDto>> GetAllMoviesAsync(CancellationToken cancellationToken)
         {
-            string path = $"{MoviesWithType("NOW_PLAYING")}&filters={DateOffset()}{Range(1)}";
+            string path = new VueRequestBuilder(VueEndpoint.MOVIES)
+                .WithType("NOW_PLAYING")
+                .WithFilters()
+                .WithDateOffset(DateTime.Now)
+                .WithRange(1)
+                .Build();
             HttpResponseMessage httpResponseMessage = await _httpClient.GetAsync(path, cancellationToken);
             httpResponseMessage.EnsureSuccessStatusCode();
             return await httpResponseMessage.Content.ReadFromJsonAsync<IEnumerable<MovieDto>>(cancellationToken: cancellationToken) 
@@ -60,7 +42,9 @@ namespace Vue.Infrastructure.VueService
 
         public async Task<MovieDto> GetMovieByIdAsync(int id, CancellationToken cancellationToken)
         {
-            string path = $"{MOVIES}?movie_id={id}";
+            string path = new VueRequestBuilder(VueEndpoint.MOVIES)
+                .WithMovieId(id)
+                .Build();
             HttpResponseMessage httpResponseMessage = await _httpClient.GetAsync(path, cancellationToken);
             httpResponseMessage.EnsureSuccessStatusCode();
             return await httpResponseMessage.Content.ReadFromJsonAsync<MovieDto>(cancellationToken: cancellationToken) 
@@ -84,7 +68,13 @@ namespace Vue.Infrastructure.VueService
 
         public async Task<IEnumerable<PerformanceDto>> GetPerformancesAsync(int cinemaId, int movieId, int range, CancellationToken cancellationToken)
         {
-            string path = $"{PERFORMANCES}?movie_id={movieId}&cinema_ids={cinemaId}&filters=&dateOffset={Range(range)}";
+            string path = new VueRequestBuilder(VueEndpoint.PERFORMANCES)
+                .WithMovieId(movieId)
+                .WithCinemaIds(cinemaId)
+                .WithFilters()
+                .WithDateOffset()
+                .WithRange(range)
+                .Build();
             HttpResponseMessage httpResponseMessage = await _httpClient.GetAsync(path, cancellationToken);
             httpResponseMessage.EnsureSuccessStatusCode();
             return await httpResponseMessage.Content.ReadFromJsonAsync<IEnumerable<PerformanceDto>>(cancellationToken: cancellationToken) 
@@ -98,7 +88,12 @@ namespace Vue.Infrastructure.VueService
 
         public async Task<IEnumerable<MovieDto>> GetTop10MoviesAsync(CancellationToken cancellationToken)
         {
-            string path = $"{MoviesWithType("TOP_10")}&filters={DateOffset()}{Range(365)}";
+            string path = new VueRequestBuilder(VueEndpoint.MOVIES)
+                .WithType("TOP_10")
+                .WithFilters()
+                .WithDateOffset(DateTime.Now)
+                .WithRange(365)
+                .Build();
             HttpResponseMessage httpResponseMessage = await _httpClient.GetAsync(path, cancellationToken);
             httpResponseMessage.EnsureSuccessStatusCode();
             return await httpResponseMessage.Content.ReadFromJsonAsync<IEnumerable<MovieDto>>(cancellationToken: cancellationToken)
