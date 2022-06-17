@@ -1,6 +1,7 @@
 ﻿using System.Net.Http.Json;
 using Vue.Core.Application.Dtos;
 using Vue.Core.Application.Interfaces;
+using Vue.Infrastructure.VueService.Cache;
 
 namespace Vue.Infrastructure.VueService
 {
@@ -10,29 +11,33 @@ namespace Vue.Infrastructure.VueService
     public sealed class VueService : IVueService
     {
         private readonly HttpClient _httpClient;
+        private readonly VueMovieCache _vueMovieCache;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="VueService"/> class.
         /// </summary>
         /// <param name="httpClient">The http client.</param>
+        /// <param name="vueMovieCache">The vue movie cache.</param>
         /// <exception cref="ArgumentNullException">Throws an <see cref="ArgumentNullException"/> when an input argument is null.</exception>
-        public VueService(HttpClient httpClient)
+        public VueService(HttpClient httpClient, VueMovieCache vueMovieCache)
         {
             _httpClient = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
+            _vueMovieCache = vueMovieCache ?? throw new ArgumentNullException(nameof(vueMovieCache));
         }
 
-        public async Task<IEnumerable<MovieDto>> GetAllMoviesAsync(CancellationToken cancellationToken)
+        public Task<IEnumerable<MovieDto>> GetAllMoviesAsync(CancellationToken cancellationToken)
         {
-            string path = new VueRequestBuilder(VueEndpoint.MOVIES)
-                .WithType("NOW_PLAYING")
-                .WithFilters()
-                .WithDateOffset(DateTime.Now)
-                .WithRange(1)
-                .Build();
-            HttpResponseMessage httpResponseMessage = await _httpClient.GetAsync(path, cancellationToken);
-            httpResponseMessage.EnsureSuccessStatusCode();
-            return await httpResponseMessage.Content.ReadFromJsonAsync<IEnumerable<MovieDto>>(cancellationToken: cancellationToken) 
-                ?? new List<MovieDto>();
+            return Task.FromResult(_vueMovieCache.Movies);
+            //string path = new VueRequestBuilder(VueEndpoint.MOVIES)
+            //    .WithType("NOW_PLAYING")
+            //    .WithFilters()
+            //    .WithDateOffset(DateTime.Now)
+            //    .WithRange(1)
+            //    .Build();
+            //HttpResponseMessage httpResponseMessage = await _httpClient.GetAsync(path, cancellationToken);
+            //httpResponseMessage.EnsureSuccessStatusCode();
+            //return await httpResponseMessage.Content.ReadFromJsonAsync<IEnumerable<MovieDto>>(cancellationToken: cancellationToken) 
+            //    ?? new List<MovieDto>();
         }
 
         public Task<IEnumerable<MovieDto>> GetAllMoviesBySpecialCategoryAsync(string specialCategory, CancellationToken cancellationToken)
@@ -98,6 +103,11 @@ namespace Vue.Infrastructure.VueService
             httpResponseMessage.EnsureSuccessStatusCode();
             return await httpResponseMessage.Content.ReadFromJsonAsync<IEnumerable<MovieDto>>(cancellationToken: cancellationToken)
                 ?? new List<MovieDto>();
+        }
+
+        public ValueTask<IEnumerable<MovieDto>> QueryMoviesByTitleAsync(string query, int limit, CancellationToken cancellationToken)
+        {
+            return ValueTask.FromResult(_vueMovieCache.Movies.TakeWhere(limit, movie => movie.title.Contains(query, StringComparison.CurrentCultureIgnoreCase)));
         }
     }
 }

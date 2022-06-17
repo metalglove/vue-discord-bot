@@ -75,5 +75,14 @@ namespace Vue.Core.Application.Interfaces
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Returns an awaitable <see cref="Task"/> containing a collection of <see cref="object"/>s.</returns>
         public Task<IEnumerable<object>> GetPerformanceOccupationAsync(int performanceId, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Query movies by the title asynchronously.
+        /// </summary>
+        /// <param name="query">The query.</param>
+        /// <param name="limit">The limit.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Returns an awaitable <see cref="ValueTask"/> containing a collection of <see cref="MovieDto"/>s.</returns>
+        public ValueTask<IEnumerable<MovieDto>> QueryMoviesByTitleAsync(string query, int limit, CancellationToken cancellationToken);
     }
 }
