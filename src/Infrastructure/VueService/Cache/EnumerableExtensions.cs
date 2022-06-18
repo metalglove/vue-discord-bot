@@ -30,5 +30,19 @@
                     break;
             }
         }
+
+        /// <summary>
+        /// For each item in the enumerable perform an action.
+        /// </summary>
+        /// <typeparam name="T">The type.</typeparam>
+        /// <param name="enumerable">The enumerable.</param>
+        /// <param name="action">The action.</param>
+        public static void ForEach<T>(this IEnumerable<T> enumerable, Action<T> action)
+        {
+            foreach (T item in enumerable)
+            {
+                action(item);
+            }
+        }
     }
 }

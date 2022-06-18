@@ -9,13 +9,9 @@ namespace Vue.DiscordBot.CLI.Commands
     /// <summary>
     /// Represents the <see cref="Top10Command"/> class.
     /// </summary>
-    internal class Top10Command : ISlashCommand
+    internal class Top10Command : SlashCommandBase
     {
         private readonly IVueService _vueService;
-
-        public string Name { get; }
-
-        public string Description { get; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Top10Command"/> class.
@@ -28,7 +24,7 @@ namespace Vue.DiscordBot.CLI.Commands
             _vueService = vueService;
         }
 
-        public async Task HandleAsync(SocketSlashCommand socketSlashCommand)
+        public override async Task HandleAsync(SocketSlashCommand socketSlashCommand)
         {
             IEnumerable<MovieDto> movies = await _vueService.GetTop10MoviesAsync(CancellationToken.None);
             StringBuilder stringBuilder = new StringBuilder();
@@ -41,7 +37,7 @@ namespace Vue.DiscordBot.CLI.Commands
             await socketSlashCommand.RespondAsync(stringBuilder.ToString());
         }
 
-        public SlashCommandProperties Build()
+        public override SlashCommandProperties Build()
         {
             return new SlashCommandBuilder()
                 .WithName(Name)

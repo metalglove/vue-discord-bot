@@ -9,13 +9,9 @@ namespace Vue.DiscordBot.CLI.Commands
     /// <summary>
     /// Represents the <see cref="GetMovieByIdCommand"/> class.
     /// </summary>
-    internal class GetMovieByIdCommand : ISlashCommand
+    internal class GetMovieByIdCommand : SlashCommandBase
     {
         private readonly IVueService _vueService;
-
-        public string Name { get; }
-
-        public string Description { get; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="GetMovieByIdCommand"/> class.
@@ -28,7 +24,7 @@ namespace Vue.DiscordBot.CLI.Commands
             _vueService = vueService;
         }
 
-        public async Task HandleAsync(SocketSlashCommand socketSlashCommand)
+        public override async Task HandleAsync(SocketSlashCommand socketSlashCommand)
         {
             int id = Convert.ToInt32(socketSlashCommand.Data.Options.First().Value);
             MovieDto movie = await _vueService.GetMovieByIdAsync(id, CancellationToken.None);
@@ -51,7 +47,7 @@ namespace Vue.DiscordBot.CLI.Commands
             await socketSlashCommand.RespondAsync(embed: embed.Build());
         }
 
-        public SlashCommandProperties Build()
+        public override SlashCommandProperties Build()
         {
             return new SlashCommandBuilder()
                 .WithName(Name)

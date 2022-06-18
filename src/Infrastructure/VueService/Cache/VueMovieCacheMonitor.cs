@@ -1,20 +1,20 @@
 ﻿using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using System.Collections.Concurrent;
 using System.Net.Http.Json;
 using Vue.Core.Application.Dtos;
 
 namespace Vue.Infrastructure.VueService.Cache
 {
     /// <summary>
-    /// Represents the <see cref="VueMovieCacheMonitor"/> class.
-    /// This is a hosted service which monitors the movies found at the Vue website.
-    /// These movies are used as the cache for the <see cref="VueMovieCache"/> class.
+    /// Represents the <see cref="VueMovieCache"/> class.
+    /// This is a hosted service which monitors the movies found at the Vue website and stores them in a cache.
     /// </summary>
-    public sealed class VueMovieCacheMonitor : IHostedService, IDisposable
+    public sealed class VueMovieCache : IHostedService, IDisposable
     {
-        private readonly ILogger<VueMovieCacheMonitor> _logger;
+        private readonly ILogger<VueMovieCache> _logger;
         private readonly HttpClient _httpClient;
-        private readonly List<MovieDto> _movies;
+        private readonly ConcurrentBag<MovieDto> _movies;
         private Timer? _timer;
 
         /// <summary>
@@ -23,21 +23,21 @@ namespace Vue.Infrastructure.VueService.Cache
         public IEnumerable<MovieDto> Movies => _movies;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="VueMovieCacheMonitor"/> class.
+        /// Initializes a new instance of the <see cref="VueMovieCache"/> class.
         /// </summary>
         /// <param name="logger">The logger.</param>
         /// <param name="httpClient">The http client.</param>
         /// <exception cref="ArgumentNullException">Thrown when an argument is null.</exception>
-        public VueMovieCacheMonitor(ILogger<VueMovieCacheMonitor> logger, HttpClient httpClient)
+        public VueMovieCache(ILogger<VueMovieCache> logger, HttpClient httpClient)
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _httpClient = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
-            _movies = new List<MovieDto>();
+            _movies = new ConcurrentBag<MovieDto>();
         }
 
         public Task StartAsync(CancellationToken cancellationToken)
         {
-            _logger.LogInformation("Started VueMovieCacheMonitor.");
+            _logger.LogInformation("Started VueMovieCache.");
             _timer = new Timer(async (object? state) => await RefreshVueMovieCacheAsync(cancellationToken), null, TimeSpan.Zero, TimeSpan.FromHours(6));
             return Task.CompletedTask;
         }
@@ -62,19 +62,20 @@ namespace Vue.Infrastructure.VueService.Cache
             _movies.Clear();
             IEnumerable<MovieDto> movies = await httpResponseMessage.Content.ReadFromJsonAsync<IEnumerable<MovieDto>>(cancellationToken: cancellationToken)
                             ?? new List<MovieDto>();
-            _movies.AddRange(movies);
+            movies.ForEach(_movies.Add);
             _logger.LogInformation($"RefreshVueMovieCacheAsync: Added {_movies.Count} moves to cache.");
         }
 
         public Task StopAsync(CancellationToken cancellationToken)
         {
-            _logger.LogInformation("Stopped VueMovieCacheMonitor.");
+            _logger.LogInformation("Stopped VueMovieCache.");
             return Task.CompletedTask;
         }
 
         public void Dispose()
         {
             _timer?.Dispose();
+            _movies.Clear();
         }
     }
 }

@@ -56,9 +56,20 @@ namespace Vue.Infrastructure.VueService
                 ?? new MovieDto();
         }
 
-        public Task<IEnumerable<MovieDto>> GetMoviesThatArePlayingNowAsync(int cinemaId, CancellationToken cancellationToken)
+        public async Task<IEnumerable<MovieDto>> GetMoviesThatArePlayingNowAsync(int cinemaId, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            // https://www.vuecinemas.nl/movies.json?type=NOW_PLAYING_PREFERED_CINEMAS&filters[cinema_id][]=in&filters[cinema_id][]=23&dateOffset=2022-06-14+21:07:00&range=7
+            string path = new VueRequestBuilder(VueEndpoint.MOVIES)
+                .WithType("NOW_PLAYING_PREFERED_CINEMAS")
+                .WithFilters(("cinema_id", "in"), ("cinema_id", "23"))
+                .WithDateOffset(DateTime.Now)
+                .WithRange(7)
+                .Build();
+
+            HttpResponseMessage httpResponseMessage = await _httpClient.GetAsync(path, cancellationToken);
+            httpResponseMessage.EnsureSuccessStatusCode();
+            return await httpResponseMessage.Content.ReadFromJsonAsync<IEnumerable<MovieDto>>(cancellationToken: cancellationToken)
+                ?? new List<MovieDto>();
         }
 
         public Task<IEnumerable<MovieDto>> GetMoviesWhichAreComingSoonAsync(CancellationToken cancellationToken)

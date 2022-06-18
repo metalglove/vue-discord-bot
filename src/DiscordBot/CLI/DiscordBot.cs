@@ -18,8 +18,9 @@ namespace Vue.DiscordBot.CLI
         private readonly IServiceProvider _serviceProvider;
         private readonly DiscordSocketClient _discordSocketClient;
         private readonly DiscordBotConfiguration _discordBotConfiguration;
-        private readonly ConcurrentDictionary<string, ISlashCommand> _slashCommands;
-
+        private readonly ConcurrentDictionary<string, SlashCommandBase> _slashCommands;
+        private readonly ConcurrentDictionary<string, Action<SocketMessageComponent>> _slashCommandCallbackHandlers;
+        
         public DiscordBot(
             ILogger<DiscordBot> logger,
             IHostApplicationLifetime applicationLifetime,
@@ -28,34 +29,51 @@ namespace Vue.DiscordBot.CLI
         {
             _logger = logger;
             _serviceProvider = serviceProvider;
-            _slashCommands = new ConcurrentDictionary<string, ISlashCommand>();
+            _slashCommands = new ConcurrentDictionary<string, SlashCommandBase>();
+            _slashCommandCallbackHandlers = new ConcurrentDictionary<string, Action<SocketMessageComponent>>();
 
             _discordBotConfiguration = discordBotConfigurationOptions.Value;
             _discordSocketClient = new DiscordSocketClient();
             _discordSocketClient.Log += Log;
             _discordSocketClient.Ready += DiscordClientReady;
             _discordSocketClient.SlashCommandExecuted += SlashCommandHandler;
+            _discordSocketClient.SelectMenuExecuted += InteractionCallbackHandlers;
+            _discordSocketClient.ButtonExecuted += InteractionCallbackHandlers;
 
             applicationLifetime.ApplicationStarted.Register(OnStarted);
             applicationLifetime.ApplicationStopping.Register(OnStopping);
             applicationLifetime.ApplicationStopped.Register(OnStopped);
         }
 
+        private Task InteractionCallbackHandlers(SocketMessageComponent socketMessageComponent)
+        {
+            _logger.LogInformation("InteractionCallbackHandler called.");
+            string customId = socketMessageComponent.Data.CustomId;
+            if (_slashCommandCallbackHandlers.TryRemove(customId, out Action<SocketMessageComponent>? action))
+            {
+                action(socketMessageComponent);
+            } 
+            else
+            {
+                _logger.LogInformation($"Failed to find callback for ${customId}");
+            }
+            return Task.CompletedTask;
+        }
+
         private async Task SlashCommandHandler(SocketSlashCommand command)
         {
-            if (_slashCommands.TryGetValue(command.Data.Name, out ISlashCommand? slashCommand))
+            if (_slashCommands.TryGetValue(command.Data.Name, out SlashCommandBase? slashCommand))
                 await slashCommand.HandleAsync(command);
             else
                 await command.RespondAsync($"Command not found..");
         }
-
         
         private async Task DiscordClientReady()
         {
             List<Type> commands = Assembly
                 .GetExecutingAssembly()
                 .GetTypes()
-                .Where(type => typeof(ISlashCommand).IsAssignableFrom(type) && !type.IsInterface)
+                .Where(type => typeof(SlashCommandBase).IsAssignableFrom(type) && !type.IsAbstract)
                 .ToList();
 
             List<ApplicationCommandProperties> applicationCommandProperties = new();
@@ -63,8 +81,9 @@ namespace Vue.DiscordBot.CLI
             {
                 try
                 {
-                    ISlashCommand slashCommand = (ISlashCommand)ActivatorUtilities.CreateInstance(_serviceProvider, commandType);
-                    if (!_slashCommands.TryAdd(slashCommand.Name, slashCommand))
+                    SlashCommandBase slashCommand = (SlashCommandBase)ActivatorUtilities.CreateInstance(_serviceProvider, commandType);
+                    slashCommand.SetCallbackHandler((customId, callback) => _slashCommandCallbackHandlers.TryAdd(customId, callback));
+                    if (!_slashCommands.TryAdd(slashCommand.Name!, slashCommand))
                     {
                         _logger.LogInformation($"Failed to add the {slashCommand.Name} to the concurrent commands dictionary.");
                         continue;

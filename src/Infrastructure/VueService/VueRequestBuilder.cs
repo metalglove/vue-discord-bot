@@ -70,7 +70,7 @@ namespace Vue.Infrastructure.VueService
                 foreach ((string filter, string value) in filters)
                 {
                     // &filters[cinema_id][]=in&filters[cinema_id][]=23 
-                    _stringBuilder.Append($"{AppendingChar}filters%5B{filter}%5D%5B%5D={value}");
+                    _stringBuilder.Append($"{AppendingChar}filters[{filter}][]={value}");
                 }
             }
             return this;

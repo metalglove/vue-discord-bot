@@ -26,18 +26,13 @@ namespace Vue.Mapping
             });
             serviceCollection.AddHttpClient<IVueService, VueService>("Vue");
 
-            serviceCollection.AddSingleton<VueMovieCacheMonitor>((serviceProvider) => 
+            serviceCollection.AddSingleton<VueMovieCache>((serviceProvider) => 
             {
                 IHttpClientFactory httpClientFactory = serviceProvider.GetRequiredService<IHttpClientFactory>();
-                ILogger<VueMovieCacheMonitor> logger = serviceProvider.GetRequiredService<ILogger<VueMovieCacheMonitor>>();
-                return new VueMovieCacheMonitor(logger, httpClientFactory.CreateClient("Vue"));
+                ILogger<VueMovieCache> logger = serviceProvider.GetRequiredService<ILogger<VueMovieCache>>();
+                return new VueMovieCache(logger, httpClientFactory.CreateClient("Vue"));
             });
-            serviceCollection.AddHostedService((serviceProvider) => serviceProvider.GetService<VueMovieCacheMonitor>());
-            serviceCollection.AddSingleton<VueMovieCache>((serviceProvider) =>
-            {
-                VueMovieCacheMonitor monitor = serviceProvider.GetRequiredService<VueMovieCacheMonitor>();
-                return new VueMovieCache(monitor.Movies);
-            });
+            serviceCollection.AddHostedService((serviceProvider) => serviceProvider.GetService<VueMovieCache>());
             return serviceCollection;
         }
     }
