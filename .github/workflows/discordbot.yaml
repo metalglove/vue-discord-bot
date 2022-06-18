@@ -1,0 +1,110 @@
+name: vue-discord-bot
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - src/DiscordBot/**
+  pull_request:
+    types: [opened, synchronize, reopened]
+    paths:
+      - src/DiscordBot/**
+
+defaults:
+  run:
+    working-directory: src
+
+jobs:
+
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+
+    - name: Setup .NET SDK
+      uses: actions/setup-dotnet@v1.7.2
+      with:
+        dotnet-version: '5.0.x'
+    
+    - name: Install dependencies
+      run: dotnet restore ./DiscordBot/CLI
+
+    - name: Build
+      run: dotnet build --no-restore ./DiscordBot/CLI
+  
+  test:
+    needs: build
+    name: Test
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+
+    - name: Test
+      run: dotnet test ./DiscordBot/Tests
+
+  semver:
+    name: Calculate SemVer version
+    runs-on: ubuntu-latest
+    outputs:
+      SEMVER: ${{ steps.fixsemver.outputs.SEMVER }}
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
+
+    - name: Git version
+      id: gitversion
+      uses: codacy/git-version@2.4.0
+      with:
+        prefix: vue-discordbot-
+
+    - name: Fix semver
+      id: fixsemver
+      run: |
+        VERSION=${{ steps.gitversion.outputs.VERSION }}
+        FIXED_SEMVER=${VERSION##*vue-discordbot-}
+        echo "::set-output name=SEMVER::${FIXED_SEMVER}"
+        echo "${FIXED_SEMVER}"
+  docker:
+    needs: 
+     - test
+     - semver
+    name: Build and push Docker images
+    env:
+      SEMVER: ${{ needs.semver.outputs.SEMVER }}
+    environment:
+      name: docker
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v1
+    
+    - name: Cache Docker layers
+      uses: actions/cache@v2
+      with:
+        path: /tmp/.buildx-cache
+        key: ${{ runner.os }}-buildx-${{ github.sha }}
+        restore-keys: |
+          ${{ runner.os }}-buildx-
+    - name: Login to the Docker registry
+      uses: docker/login-action@v1 
+      with:
+        registry: ${{ secrets.DOCKER_REGISTRY }}
+        username: ${{ secrets.DOCKER_USERNAME }}
+        password: ${{ secrets.DOCKER_PASSWORD }}
+    
+    - name: Build and push vue-discord-bot Docker image 
+      run: |
+        echo "Building vue-discord-bot docker image"
+        docker build -t ${{ secrets.DOCKER_REGISTRY }}/vue-discord-bot:${{ env.SEMVER }} -t ${{ secrets.DOCKER_REGISTRY }}/vue-discord-bot:latest -f ./vue-discord-bot.Dockerfile .
+        echo "Publishing vue-discord-bot docker image"
+        docker push --all-tags ${{ secrets.DOCKER_REGISTRY }}/vue-discord-bot
