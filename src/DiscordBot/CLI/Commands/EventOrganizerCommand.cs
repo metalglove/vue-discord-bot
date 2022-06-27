@@ -1,5 +1,6 @@
 using Discord;
 using Discord.WebSocket;
+using Vue.Core.Application.Dtos;
 using Vue.Core.Application.Interfaces;
 
 namespace Vue.DiscordBot.CLI.Commands
@@ -56,7 +57,37 @@ namespace Vue.DiscordBot.CLI.Commands
 			var availablePerformances = performances
 				.Where(x => x.StartDate.DayOfWeek == (DayOfWeek)Convert.ToInt32(socketSlashCommand.Data.Options.First(x => x.Name == "day").Value) - 1);
 
-			await socketSlashCommand.RespondAsync($"Test {availablePerformances.First().StartDate}", ephemeral: true);
+			MovieDto movie = await _vueService.GetMovieByIdAsync(Convert.ToInt32(socketSlashCommand.Data.Options.First().Value), CancellationToken.None);
+
+			EmbedBuilder embed = new EmbedBuilder
+			{
+				Title = movie.title,
+				ImageUrl = movie.image,
+				ThumbnailUrl = movie.image,
+				Url = movie.vue_url
+			};
+			embed.AddField("Cast", movie.cast);
+			embed.AddField("Rating", $"{movie.rating_average}:star:", inline: true);
+			embed.AddField("Genres", movie.genres, inline: true);
+			embed.AddField("Release Date", DateTime.Parse(movie.release_date).ToString("yyyy-MM-dd"), inline: true);
+			embed.AddField("Length", $"{movie.playingtime}min", inline: true);
+
+			string customId = "event-" + Guid.NewGuid();
+			ComponentBuilder? componentBuilder = new ComponentBuilder();
+
+			foreach (var item in availablePerformances)
+			{
+				componentBuilder.WithButton(item.start, customId, ButtonStyle.Primary);
+			}
+
+			_command?.Invoke(customId, async (smc) => await HandlePerformancesResponseAsync(smc));
+
+			await socketSlashCommand.RespondAsync(embed: embed.Build(), components: componentBuilder.Build());
+		}
+
+		private async Task HandlePerformancesResponseAsync(SocketMessageComponent smc)
+		{
+			await smc.DeleteOriginalResponseAsync();
 		}
 	}
 }
